@@ -1,8 +1,8 @@
 from selenium.webdriver.common.by import By
 
 
-class CompaniesPageLocators:
+class CampaignsPageLocators:
 
-    COMPANIES_PAGE_TITLE = (
+    CAMPAIGNS_PAGE_TITLE = (
         By.XPATH, '//div[contains(text(), "С чего начать?")]'
     )
