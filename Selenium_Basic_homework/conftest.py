@@ -1,8 +1,12 @@
 import pytest
 from selenium.webdriver import Chrome
+from ui.pages.base_page import BasePage
 from ui.pages.login_page import LoginPage
 from ui.pages.logout_page import LogoutPage
-from ui.pages.companies_page import CompaniesPage
+from ui.pages.campaigns_page import CampaignsPage
+from ui.pages.navigation_page import NavigationPage
+from ui.pages.profile_page import ProfilePage
+from ui.pages.tools_page import ToolsPage
 
 
 DRIVER_PATH = '/home/mrpedro/drivers/chromedriver'
@@ -17,6 +21,11 @@ def pytest_configure(config):
 
 
 @pytest.fixture
+def base_page(driver):
+    return BasePage(driver)
+
+
+@pytest.fixture
 def login_page(driver):
     return LoginPage(driver)
 
@@ -27,8 +36,23 @@ def logout_page(driver):
 
 
 @pytest.fixture
-def companies_page(driver):
-    return CompaniesPage(driver)
+def campaigns_page(driver):
+    return CampaignsPage(driver)
+
+
+@pytest.fixture
+def navigation_page(driver):
+    return NavigationPage(driver)
+
+
+@pytest.fixture
+def profile_page(driver):
+    return ProfilePage(driver)
+
+
+@pytest.fixture
+def tools_page(driver):
+    return ToolsPage(driver)
 
 
 @pytest.fixture
