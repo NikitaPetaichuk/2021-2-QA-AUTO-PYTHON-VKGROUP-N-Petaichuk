@@ -6,9 +6,7 @@ from ui.pages.base_page import BasePage
 from ui.pages.login_page import LoginPage
 from ui.pages.logout_page import LogoutPage
 from ui.pages.campaigns_page import CampaignsPage
-from ui.pages.navigation_page import NavigationPage
 from ui.pages.profile_page import ProfilePage
-from ui.pages.tools_page import ToolsPage
 
 
 # Adding UI mark for tests
@@ -39,18 +37,8 @@ def campaigns_page(driver):
 
 
 @pytest.fixture
-def navigation_page(driver):
-    return NavigationPage(driver)
-
-
-@pytest.fixture
 def profile_page(driver):
     return ProfilePage(driver)
-
-
-@pytest.fixture
-def tools_page(driver):
-    return ToolsPage(driver)
 
 
 @pytest.fixture

@@ -10,5 +10,5 @@ class LogoutLocators:
         By.XPATH, '//ul[contains(@class, "rightMenu-module-visibleRightMenu")]'
     )
     LOGOUT_BUTTON = (
-        By.XPATH, '//a[contains(@class, "rightMenu-module-rightMenuLink") and contains(text(), "Выйти")]'
+        By.XPATH, '//a[contains(@class, "rightMenu-module-rightMenuLink") and @href="/logout"]'
     )

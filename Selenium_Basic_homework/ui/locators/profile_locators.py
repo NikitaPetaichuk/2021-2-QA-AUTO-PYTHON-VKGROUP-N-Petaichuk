@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 class ProfileLocators:
 
     PROFILE_TITLE = (
-        By.XPATH, '//span[contains(text(), "Контактная информация")]'
+        By.XPATH, '//div[contains(@class, "profile__title")]'
     )
     FULL_NAME_INPUT = (
         By.XPATH, '//div[@data-name = "fio"]//input'
@@ -16,5 +16,5 @@ class ProfileLocators:
         By.XPATH, '//button[contains(@class, "button_submit")]'
     )
     SUBMIT_MESSAGE = (
-        By.XPATH, '//div[contains(text(), "Информация успешно сохранена")]'
+        By.XPATH, '//div[@data-class-name = "SuccessView"]'
     )

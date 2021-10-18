@@ -23,7 +23,7 @@ class TestHomeworkOne(BaseCase):
     @pytest.mark.UI
     def test_change_profile_data(self):
         self.login_page.login()
-        self.navigation_page.click(self.navigation_page.locators.GO_TO_PROFILE_BUTTON)
+        self.campaigns_page.click(NavigationLocators.GO_TO_PROFILE_BUTTON)
         self.profile_page.change_profile_data(TestsConfig.FULL_NAME_TO_SET, TestsConfig.PHONE_NUMBER_TO_SET)
         submit_message = self.profile_page.find(self.profile_page.locators.SUBMIT_MESSAGE)
         assert submit_message.is_displayed()
@@ -50,5 +50,5 @@ class TestHomeworkOne(BaseCase):
     )
     def test_go_to_page(self, destination_button_locator, transition_url):
         self.login_page.login()
-        self.navigation_page.click(destination_button_locator)
+        self.campaigns_page.click(destination_button_locator)
         assert is_page_open(self.driver, transition_url)
