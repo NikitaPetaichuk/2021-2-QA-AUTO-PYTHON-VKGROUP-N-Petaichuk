@@ -59,4 +59,4 @@ def driver():
     browser.maximize_window()
     browser.get(UrlsConfig.MY_TARGET_SITE_URL)
     yield browser
-    browser.close()
+    browser.quit()

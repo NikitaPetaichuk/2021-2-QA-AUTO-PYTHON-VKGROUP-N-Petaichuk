@@ -1,12 +1,12 @@
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import StaleElementReferenceException, ElementClickInterceptedException
-
-
-CLICK_ATTEMPTS_COUNT = 3
+from static.tests_config import TestsConfig
 
 
 class BasePage(object):
+
+    url = 'https://target.my.com/'
 
     def __init__(self, driver):
         self.driver = driver
@@ -20,11 +20,11 @@ class BasePage(object):
         return self.wait(timeout=timeout).until(ec.visibility_of_element_located(locator))
 
     def click(self, locator, timeout=None):
-        for attempt_number in range(CLICK_ATTEMPTS_COUNT):
+        for attempt_number in range(TestsConfig.CLICK_ATTEMPTS_COUNT):
             try:
                 element = self.find(locator, timeout=timeout)
                 element.click()
                 return
             except (StaleElementReferenceException, ElementClickInterceptedException):
-                if attempt_number == CLICK_ATTEMPTS_COUNT - 1:
+                if attempt_number == TestsConfig.CLICK_ATTEMPTS_COUNT - 1:
                     raise

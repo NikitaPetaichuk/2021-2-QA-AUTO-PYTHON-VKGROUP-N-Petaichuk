@@ -1,9 +1,9 @@
 import pytest
 from static.tests_config import TestsConfig
+from static.urls_config import UrlsConfig
 from base import BaseCase
 from ui.locators.navigation_locators import NavigationLocators
-from ui.locators.profile_locators import ProfileLocators
-from ui.locators.tools_locators import ToolsLocators
+from utils.util_funcs import is_page_open
 
 
 class TestHomeworkOne(BaseCase):
@@ -11,17 +11,14 @@ class TestHomeworkOne(BaseCase):
     @pytest.mark.UI
     def test_login(self):
         self.login_page.login()
-        companies_page_title = self.campaigns_page.find(self.campaigns_page.locators.CAMPAIGNS_PAGE_TITLE)
-        assert companies_page_title.is_displayed()
-        self.logout_page.logout()
+        assert is_page_open(self.driver, UrlsConfig.MY_TARGET_DASHBOARD_URL)
 
     @pytest.mark.UI
     def test_logout(self):
         self.login_page.login()
         self.campaigns_page.find(self.campaigns_page.locators.CAMPAIGNS_PAGE_TITLE)
         self.logout_page.logout()
-        open_login_modal_button = self.login_page.find(self.login_page.locators.OPEN_LOGIN_MODAL_BUTTON)
-        assert open_login_modal_button.is_displayed()
+        assert is_page_open(self.driver, UrlsConfig.MY_TARGET_SITE_URL)
 
     @pytest.mark.UI
     def test_change_profile_data(self):
@@ -36,19 +33,22 @@ class TestHomeworkOne(BaseCase):
         phone_number_input = self.profile_page.find(self.profile_page.locators.PHONE_NUMBER_INPUT)
         assert full_name_input.get_attribute("value") == TestsConfig.FULL_NAME_TO_SET
         assert phone_number_input.get_attribute("value") == TestsConfig.PHONE_NUMBER_TO_SET
-        self.logout_page.logout()
 
     @pytest.mark.UI
     @pytest.mark.parametrize(
-        "destination_button_locator,transition_checker_locator",
+        "destination_button_locator,transition_url",
         [
-            pytest.param(NavigationLocators.GO_TO_PROFILE_BUTTON, ProfileLocators.PROFILE_TITLE),
-            pytest.param(NavigationLocators.GO_TO_TOOLS_BUTTON, ToolsLocators.FEEDS_TITLE)
+            pytest.param(
+                NavigationLocators.GO_TO_PROFILE_BUTTON,
+                UrlsConfig.MY_TARGET_PROFILE_URL,
+            ),
+            pytest.param(
+                NavigationLocators.GO_TO_TOOLS_BUTTON,
+                UrlsConfig.MY_TARGET_TOOLS_FEEDS_URL,
+            )
         ]
     )
-    def test_go_to_page(self, destination_button_locator, transition_checker_locator):
+    def test_go_to_page(self, destination_button_locator, transition_url):
         self.login_page.login()
         self.navigation_page.click(destination_button_locator)
-        checker_element = self.base_page.find(transition_checker_locator)
-        assert checker_element.is_displayed()
-        self.logout_page.logout()
+        assert is_page_open(self.driver, transition_url)
