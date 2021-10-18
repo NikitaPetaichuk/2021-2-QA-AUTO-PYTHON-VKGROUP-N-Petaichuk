@@ -1,12 +1,9 @@
 import pytest
+from static.tests_config import TestsConfig
 from base import BaseCase
 from ui.locators.navigation_locators import NavigationLocators
 from ui.locators.profile_locators import ProfileLocators
 from ui.locators.tools_locators import ToolsLocators
-
-
-FULL_NAME_TO_SET = "Test Account"
-PHONE_NUMBER_TO_SET = "+7 (911) 111-22-33"
 
 
 class TestHomeworkOne(BaseCase):
@@ -30,15 +27,15 @@ class TestHomeworkOne(BaseCase):
     def test_change_profile_data(self):
         self.login_page.login()
         self.navigation_page.click(self.navigation_page.locators.GO_TO_PROFILE_BUTTON)
-        self.profile_page.change_profile_data(FULL_NAME_TO_SET, PHONE_NUMBER_TO_SET)
+        self.profile_page.change_profile_data(TestsConfig.FULL_NAME_TO_SET, TestsConfig.PHONE_NUMBER_TO_SET)
         submit_message = self.profile_page.find(self.profile_page.locators.SUBMIT_MESSAGE)
         assert submit_message.is_displayed()
 
         self.driver.refresh()
         full_name_input = self.profile_page.find(self.profile_page.locators.FULL_NAME_INPUT)
         phone_number_input = self.profile_page.find(self.profile_page.locators.PHONE_NUMBER_INPUT)
-        assert full_name_input.get_attribute("value") == FULL_NAME_TO_SET
-        assert phone_number_input.get_attribute("value") == PHONE_NUMBER_TO_SET
+        assert full_name_input.get_attribute("value") == TestsConfig.FULL_NAME_TO_SET
+        assert phone_number_input.get_attribute("value") == TestsConfig.PHONE_NUMBER_TO_SET
         self.logout_page.logout()
 
     @pytest.mark.UI

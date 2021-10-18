@@ -1,5 +1,7 @@
 import pytest
 from selenium.webdriver import Chrome
+from static.tests_config import TestsConfig
+from static.urls_config import UrlsConfig
 from ui.pages.base_page import BasePage
 from ui.pages.login_page import LoginPage
 from ui.pages.logout_page import LogoutPage
@@ -7,10 +9,6 @@ from ui.pages.campaigns_page import CampaignsPage
 from ui.pages.navigation_page import NavigationPage
 from ui.pages.profile_page import ProfilePage
 from ui.pages.tools_page import ToolsPage
-
-
-DRIVER_PATH = '/home/mrpedro/drivers/chromedriver'
-MY_TARGET_SITE_URL = 'https://target.my.com/'
 
 
 # Adding UI mark for tests
@@ -57,8 +55,8 @@ def tools_page(driver):
 
 @pytest.fixture
 def driver():
-    browser = Chrome(executable_path=DRIVER_PATH)
+    browser = Chrome(executable_path=TestsConfig.DRIVER_PATH)
     browser.maximize_window()
-    browser.get(MY_TARGET_SITE_URL)
+    browser.get(UrlsConfig.MY_TARGET_SITE_URL)
     yield browser
     browser.close()
