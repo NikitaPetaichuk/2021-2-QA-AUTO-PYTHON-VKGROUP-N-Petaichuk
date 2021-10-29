@@ -1,5 +1,3 @@
-from selenium.common.exceptions import TimeoutException
-
 from ui.pages.base_page import BasePage
 from ui.locators.segments_locators import SegmentsLocators
 from utils.generate_funcs import generate_name
@@ -30,13 +28,13 @@ class SegmentsPage(BasePage):
     def delete_segment_by_name(self, segment_name):
         self.logger.info(f"Deleting the segment with name {segment_name}")
         segment_row_id = self.get_id_by_segment_name(segment_name)
-        segment_delete_button_locator = create_xpath_one_value_locator(
-            self.locators.SEGMENT_DELETE_BUTTON_TEMPLATE,
+        segment_checkbox_locator = create_xpath_one_value_locator(
+            self.locators.SEGMENT_CHOOSE_CHECKBOX_TEMPLATE,
             segment_row_id
         )
-        self.scroll_segments_table()
-        self.click(segment_delete_button_locator)
-        self.click(self.locators.REMOVE_SUBMIT_BUTTON)
+        self.click(segment_checkbox_locator)
+        self.click(self.locators.SEGMENTS_CHOOSE_ACTION_SELECT)
+        self.click(self.locators.DELETE_SEGMENTS_ACTION)
 
     def get_id_by_segment_name(self, segment_name):
         self.logger.info(f"Searching for id of segment with name {segment_name}")
@@ -47,12 +45,3 @@ class SegmentsPage(BasePage):
         segment_cell = self.find(segment_locator)
         href = segment_cell.get_attribute('href')
         return href.split("/")[-1]
-
-    def scroll_segments_table(self):
-        self.logger.info(f"Scrolling for delete button appearance")
-        scroll_element = self.find(self.locators.SEGMENTS_TABLE_SCROLL)
-        actions = self.action_chains
-        actions.move_to_element(scroll_element)
-        actions.click_and_hold(scroll_element)
-        actions.move_by_offset(100, 0)
-        actions.perform()

@@ -1,7 +1,6 @@
 import logging
 import time
 
-from selenium.webdriver import ActionChains
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -31,21 +30,15 @@ class BasePage(object):
         raise PageNotLoadedException(f'{self.url} did not open in {timeout} sec for {self.__class__.__name__}.\n'
                                      f'Current url is {self.driver.current_url}.')
 
-    @property
-    def action_chains(self):
-        return ActionChains(self.driver)
-
     def wait(self, timeout=None):
         if timeout is None:
             timeout = TestsConfig.DEFAULT_WAITING_TIMEOUT
         return WebDriverWait(self.driver, timeout=timeout)
 
     def find(self, locator, timeout=None):
-        self.logger.debug(f"Searching for element with locator {locator}")
         return self.wait(timeout=timeout).until(ec.visibility_of_element_located(locator))
 
     def find_hidden(self, locator, timeout=None):
-        self.logger.debug(f"Searching for hidden element with locator {locator}")
         return self.wait(timeout=timeout).until(ec.presence_of_element_located(locator))
 
     def is_element_exists(self, locator, timeout=None):

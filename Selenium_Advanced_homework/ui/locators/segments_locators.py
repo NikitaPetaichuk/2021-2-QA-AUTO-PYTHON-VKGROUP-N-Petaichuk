@@ -32,11 +32,13 @@ class SegmentsLocators:
     )
 
     SEGMENT_CELL_TEMPLATE = '//a[@title = "{}"]'
-    SEGMENTS_TABLE_SCROLL = (
-        By.XPATH, '//div[@class = "custom-scroll__handler"]'
+    SEGMENT_CHOOSE_CHECKBOX_TEMPLATE =\
+        '//div[contains(@data-test, "row-{}")]//input[@type = "checkbox"]'
+    SEGMENTS_CHOOSE_ACTION_SELECT = (
+        By.XPATH,
+        '//div[contains(@class, "segmentsTable-module-massActionsSelect")]'
     )
-    SEGMENT_DELETE_BUTTON_TEMPLATE =\
-        '//div[contains(@data-test, "remove-{}")]//span[contains(@class, "cells-module-removeCell")]'
-    REMOVE_SUBMIT_BUTTON = (
-        By.XPATH, '//button[contains(@class, "button_confirm-remove")]'
+    DELETE_SEGMENTS_ACTION = (
+        By.XPATH,
+        '//li[contains(@class, "optionsList-module-option") and @data-test = "remove"]'
     )

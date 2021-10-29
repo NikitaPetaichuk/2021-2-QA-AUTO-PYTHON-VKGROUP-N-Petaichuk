@@ -32,6 +32,9 @@ class TestHomeworkTwoUnauthorized(BaseCase):
             campaign_cell = self.campaigns_page.find(campaign_locator)
             assert campaign_cell.is_displayed()
 
+        with allure.step("Tearing down test: deleting campaign"):
+            self.campaigns_page.delete_campaign_by_name(campaign_name)
+
     @allure.epic('QA Python Homework 2: Advanced UI testing')
     @allure.feature('MyTarget user functionality')
     @allure.story('Create a new segment')
@@ -48,6 +51,9 @@ class TestHomeworkTwoUnauthorized(BaseCase):
             )
             segment_cell = segments_page.find(segment_locator)
             assert segment_cell.is_displayed()
+
+        with allure.step("Tearing down test: deleting segment"):
+            segments_page.delete_segment_by_name(segment_name)
 
     @allure.epic('QA Python Homework 2: Advanced UI testing')
     @allure.feature('MyTarget user functionality')
