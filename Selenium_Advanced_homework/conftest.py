@@ -2,6 +2,7 @@ import logging
 import os.path
 import shutil
 import sys
+import time
 
 import allure
 import pytest
@@ -29,6 +30,11 @@ def pytest_configure(config):
     config.base_test_dir = base_dir
 
 
+@pytest.fixture(scope='session', autouse=True)
+def faker_seed():
+    return int(time.time())
+
+
 @pytest.fixture(scope='function')
 def test_dir(request):
     test_dir = os.path.join(request.config.base_test_dir,
@@ -40,6 +46,11 @@ def test_dir(request):
 @pytest.fixture(scope='session')
 def repository_root():
     return os.path.abspath(os.path.join(__file__, os.path.pardir))
+
+
+@pytest.fixture(scope='function')
+def picture_path(repository_root):
+    return os.path.join(repository_root, TestsConfig.PICTURE_DIRECTORY, TestsConfig.PICTURE_NAME)
 
 
 @pytest.fixture(scope='function')

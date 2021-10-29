@@ -38,7 +38,8 @@ class BaseCase:
         if self.authorize:
             cookies = request.getfixturevalue('cookies')
             for cookie in cookies:
-                self.driver.add_cookie(cookie)
+                if cookie['name'] in TestsConfig.AUTH_COOKIES_NAMES_LIST:
+                    self.driver.add_cookie(cookie)
             self.driver.refresh()
             self.campaigns_page: CampaignsPage = CampaignsPage(driver)
         self.logger.info("Initial setup completed")

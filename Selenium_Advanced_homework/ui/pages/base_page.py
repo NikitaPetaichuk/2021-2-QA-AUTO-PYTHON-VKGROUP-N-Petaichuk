@@ -20,12 +20,13 @@ class BasePage(object):
     def __init__(self, driver):
         self.driver: WebDriver = driver
         self.logger = logging.getLogger('tests')
+        self.logger.info(f'Going to {self.__class__.__name__}')
         self.is_opened()
 
     def is_opened(self, timeout=TestsConfig.DEFAULT_WAITING_TIMEOUT):
         start_loading_time = time.time()
         while time.time() - start_loading_time < timeout:
-            if self.driver.current_url == self.url:
+            if self.driver.current_url.startswith(self.url):
                 return True
         raise PageNotLoadedException(f'{self.url} did not open in {timeout} sec for {self.__class__.__name__}.\n'
                                      f'Current url is {self.driver.current_url}.')
@@ -59,3 +60,8 @@ class BasePage(object):
             except (StaleElementReferenceException, ElementClickInterceptedException):
                 if attempt_number == TestsConfig.CLICK_ATTEMPTS_COUNT - 1:
                     raise
+
+    def write_into_input(self, input_locator, input_data):
+        input_element = self.find(input_locator)
+        input_element.clear()
+        input_element.send_keys(input_data)
