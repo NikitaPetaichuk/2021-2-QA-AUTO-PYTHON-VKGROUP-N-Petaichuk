@@ -10,15 +10,16 @@ class TestHomeworkThree(ApiBaseCase):
     @allure.feature('MyTarget API functionality')
     @allure.story('Create a new campaign (Traffic, Banner)')
     @pytest.mark.API
-    def test_create_traffic_banner_campaign(self, faker):
+    def test_create_traffic_banner_campaign(self, faker, picture_path):
         with allure.step("Creating a new campaign"):
             campaign_name = faker.unique.company() + " campaign"
-            created_campaign = self.api_client.post_create_traffic_banner_campaign(campaign_name)
+            created_campaign = self.api_client.post_create_traffic_banner_campaign(campaign_name, picture_path)
 
         with allure.step("Check the new campaign creation"):
             campaign_id = created_campaign["id"]
-            last_added_campaign = self.api_client.get_last_added_campaign()
-            assert campaign_id == last_added_campaign["id"]
+            campaigns_list = self.api_client.get_campaigns()
+            found_campaign = next((campaign for campaign in campaigns_list if campaign["id"] == campaign_id), None)
+            assert found_campaign is not None
 
         with allure.step("Tearing down: deleting the created campaign"):
             self.api_client.post_delete_campaign(campaign_id)
@@ -36,6 +37,7 @@ class TestHomeworkThree(ApiBaseCase):
         with allure.step("Checking the segment existence"):
             segment_id = segment['id']
             segment_object = self.api_client.get_segment(segment_id)
+            assert segment_object is not None
             assert segment_object["id"] == segment_id
 
         with allure.step("Tearing down: delete the created segment"):

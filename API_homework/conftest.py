@@ -47,6 +47,11 @@ def repository_root():
 
 
 @pytest.fixture(scope='function')
+def picture_path(repository_root):
+    return os.path.join(repository_root, TestsConfig.PICTURE_DIRECTORY, TestsConfig.PICTURE_NAME)
+
+
+@pytest.fixture(scope='function')
 def logger(test_dir):
     log_formatter = logging.Formatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s')
     log_file = os.path.join(test_dir, TestsConfig.INTERNAL_LOG_FILE_NAME)

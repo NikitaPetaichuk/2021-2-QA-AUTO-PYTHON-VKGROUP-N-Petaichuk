@@ -1,10 +1,10 @@
-import json
 import logging
 
 import requests
 from urllib.parse import urljoin
 
 from static.tests_config import TestsConfig
+from utils.json_generator import RequestsDataGenerator
 
 
 class UnexpectedResponseStatusCodeException(Exception):
@@ -25,14 +25,19 @@ class ApiClient:
     def post_login_headers(self):
         return {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://target.my.com/'
+            'Referer': self.base_url
         }
 
     @property
     def post_act_with_segments_headers(self):
         return {
             'Content-Type': 'application/json',
-            'Referer': 'https://target.my.com/segments/segments_list/new/',
+            'X-CSRFToken': self.csrf_token
+        }
+
+    @property
+    def post_send_picture_headers(self):
+        return {
             'X-CSRFToken': self.csrf_token
         }
 
@@ -40,7 +45,6 @@ class ApiClient:
     def post_created_campaigns_headers(self):
         return {
             'Content-Type': 'application/json',
-            'Referer': 'https://target.my.com/campaign/new',
             'X-CSRFToken': self.csrf_token
         }
 
@@ -48,14 +52,7 @@ class ApiClient:
     def post_delete_campaign_headers(self):
         return {
             'Content-Type': 'application/json',
-            'Referer': 'https://target.my.com/dashboard',
             'X-CSRFToken': self.csrf_token
-        }
-
-    @staticmethod
-    def _generate_get_headers(referer):
-        return {
-            'Referer': referer
         }
 
     def _log_before_request(self, url, headers, data, expected_status):
@@ -82,147 +79,104 @@ class ApiClient:
                 f'RESPONSE CONTENT: {response.text}\n\n'
             )
 
-    def _make_request(self, method, url, headers=None, data=None, expected_status=200, jsonify=False, use_base=True):
-        if use_base:
-            url_to_request = urljoin(self.base_url, url)
-        else:
-            url_to_request = url
-
-        self._log_before_request(url_to_request, headers, data, expected_status)
-        response = self.session.request(
-            method, url_to_request, headers=headers, data=data, allow_redirects=True
-        )
+    def _make_request(self, method, url, headers=None, data=None, expected_status=200, jsonify=False):
+        self._log_before_request(url, headers, data, expected_status)
+        response = self.session.request(method, url, headers=headers, data=data, allow_redirects=True)
         self._log_after_request(response)
 
         if response.status_code != expected_status:
             raise UnexpectedResponseStatusCodeException(
-                f'Got {response.status_code} {response.request} for URL "{url_to_request}"'
+                f'Got {response.status_code} {response.request} for URL "{url}"'
             )
         if jsonify:
-            json_response = response.json()
-            return json_response
+            return response.json()
         return response
 
     def _get_csrf_token(self):
-        location_url = 'csrf/'
-        headers = self._generate_get_headers('https://target.my.com/dashboard')
-        set_cookie_headers = self._make_request("GET", location_url, headers=headers).headers['set-cookie']
+        request_url = urljoin(self.base_url, 'csrf/')
+        set_cookie_headers = self._make_request("GET", request_url).headers['set-cookie']
         token_part = set_cookie_headers.split(';')[0]
         self.csrf_token = token_part.split('=')[1]
 
     def post_login(self):
-        self.logger.info("Logging into MyTarget.")
+        self.logger.info("Logging into MyTarget")
 
         login_url = TestsConfig.LOGIN_URL
         headers = self.post_login_headers
-        data = {
-            'email': self.email,
-            'password': self.password,
-            'continue': 'https://target.my.com/auth/mycom?state=target_login%3D1%26ignore_opener%3D1#email',
-            'failure': 'https://account.my.com/login/'
-        }
-        self._make_request(
-            "POST", login_url, headers=headers, data=data, use_base=False
-        )
+        data = RequestsDataGenerator.generate_data_for_login(self.email, self.password)
+        self._make_request("POST", login_url, headers=headers, data=data)
         self._get_csrf_token()
 
     def post_create_segment(self, segment_name):
         self.logger.info(f"Creating the segment with the name '{segment_name}'")
 
-        location_url = "api/v2/remarketing/segments.json?fields=relations__object_type,relations__object_id," \
-                       "relations__params,relations__params__score,relations__id,relations_count,id,name," \
-                       "pass_condition,created,campaign_ids,users,flags"
+        request_url = urljoin(self.base_url, "api/v2/remarketing/segments.json?fields=id,name")
         headers = self.post_act_with_segments_headers
-        data = json.dumps({
-            "logicType": "or",
-            "name": segment_name,
-            "pass_condition": 1,
-            "relations": [
-                {
-                    "object_type": "remarketing_player",
-                    "params": {
-                        "type": "positive",
-                        "left": 365,
-                        "right": 0
-                    }
-                }
-            ]
-        })
-        response = self._make_request("POST", location_url, headers=headers, data=data, jsonify=True)
-        return response
+        data = RequestsDataGenerator.generate_json_for_creating_segment(segment_name)
+        return self._make_request("POST", request_url, headers=headers, data=data, jsonify=True)
 
     def get_segment(self, segment_id):
-        self.logger.info(f"Getting the segment with id {segment_id}")
+        self.logger.info(f"Getting the segment with ID {segment_id}")
 
-        location_url = f"api/v2/coverage/segment.json?id={segment_id}"
-        headers = self._generate_get_headers('https://target.my.com/segments/segments_list')
-        response = self._make_request("GET", location_url, headers=headers, jsonify=True)
-        return response["items"][0]
+        request_url = urljoin(self.base_url, f"api/v2/coverage/segment.json?id={segment_id}")
+        response = self._make_request("GET", request_url, jsonify=True)
+        return None if response["items"][0]["status"] == "not found" else response["items"][0]
 
     def post_delete_segment(self, segment_id):
-        self.logger.info(f"Deleting the segment with id {segment_id}")
+        self.logger.info(f"Deleting the segment with ID {segment_id}")
 
-        location_url = "api/v1/remarketing/mass_action/delete.json"
+        location_url = urljoin(self.base_url, "api/v1/remarketing/mass_action/delete.json")
         headers = self.post_act_with_segments_headers
-        data = json.dumps([
-            {"source_id": segment_id, "source_type": "segment"}
-        ])
-        response = self._make_request("POST", location_url, headers=headers, data=data, jsonify=True)
-        return response
+        data = RequestsDataGenerator.generate_json_for_deleting_segment(segment_id)
+        return self._make_request("POST", location_url, headers=headers, data=data, jsonify=True)
 
-    def post_create_traffic_banner_campaign(self, campaign_name):
+    def get_url_id(self, url):
+        self.logger.info(f"Getting ID for the URL {url}")
+
+        request_url = urljoin(self.base_url, f'api/v1/urls/?url={url}')
+        response = self._make_request("GET", request_url, jsonify=True)
+        return response["id"]
+
+    def get_picture_id(self, picture_name, picture_path):
+        self.logger.info(f"Getting ID for the picture with name {picture_name} and path {picture_path}")
+
+        request_url = urljoin(self.base_url, 'api/v2/content/static.json')
+        headers = self.post_send_picture_headers
+        with open(picture_path, 'rb') as picture:
+            files = RequestsDataGenerator.generate_files_for_sending_picture(picture_name, picture)
+            response = self.session.post(request_url, headers=headers, files=files)
+            return response.json()["id"]
+
+    def post_create_traffic_banner_campaign(self, campaign_name, picture_path):
         self.logger.info(f"Creating the traffic banner campaign with the name '{campaign_name}'")
 
-        location_url = 'api/v2/campaigns.json'
+        url_id = self.get_url_id(TestsConfig.TARGET_URL)
+        picture_id = self.get_picture_id(TestsConfig.PICTURE_NAME, picture_path)
+
+        location_url = urljoin(self.base_url, 'api/v2/campaigns.json')
         headers = self.post_created_campaigns_headers
-        data = json.dumps({
-            "name": campaign_name,
-            "objective": "traffic",
-            "package_id": 961,
-            "banners": [{
-                "urls": {
-                    "primary": {
-                        "id": 1852176
-                    }
-                },
-                "textblocks": {},
-                "content": {
-                    "image_240x400": {
-                        "id": 2180798
-                    }
-                },
-                "name": ""
-            }]
-        })
-        response = self._make_request("POST", location_url, headers=headers, data=data, jsonify=True)
-        return response
+        data = RequestsDataGenerator.generate_json_for_creating_campaign(campaign_name, url_id, picture_id)
+        return self._make_request("POST", location_url, headers=headers, data=data, jsonify=True)
 
     def get_campaigns_count(self):
-        self.logger.info("Getting campaigns count")
+        self.logger.info("Getting the campaigns count")
 
-        location_url = f"api/v2/campaigns.json?_user_id__in={TestsConfig.MY_TARGET_USER_ID}"
-        headers = self._generate_get_headers('https://target.my.com/dashboard')
-        response = self._make_request("GET", location_url, headers=headers, jsonify=True)
-        self.logger.info(f"Got count: {response['count']}")
-        return response["count"]
+        request_url = urljoin(self.base_url, "api/v2/campaigns.json")
+        response = self._make_request("GET", request_url, jsonify=True)
+        return response['count']
 
-    def get_last_added_campaign(self):
-        self.logger.info("Getting the last added campaign")
+    def get_campaigns(self):
+        self.logger.info(f"Getting the campaigns list")
 
         campaigns_count = self.get_campaigns_count()
-        location_url = f"api/v2/campaigns.json?fields=id&offset={campaigns_count - 1}&" \
-                       f"_user_id__in={TestsConfig.MY_TARGET_USER_ID}"
-        headers = self._generate_get_headers('https://target.my.com/dashboard')
-        response = self._make_request("GET", location_url, headers=headers, jsonify=True)
-        return response["items"][0]
+        request_url = urljoin(self.base_url, f"api/v2/campaigns.json?fields=id&limit={campaigns_count}")
+        response = self._make_request("GET", request_url, jsonify=True)
+        return response["items"]
 
     def post_delete_campaign(self, campaign_id):
         self.logger.info(f"Deleting the campaign with the name '{campaign_id}'")
 
-        location_url = 'api/v2/campaigns/mass_action.json'
+        location_url = urljoin(self.base_url, 'api/v2/campaigns/mass_action.json')
         headers = self.post_delete_campaign_headers
-        data = json.dumps([{
-            "id": campaign_id,
-            "status": "deleted"
-        }])
-        self._make_request("POST", location_url, headers=headers, data=data, expected_status=204)
+        data = RequestsDataGenerator.generate_json_for_deleting_campaign(campaign_id)
+        return self._make_request("POST", location_url, headers=headers, data=data, expected_status=204)
