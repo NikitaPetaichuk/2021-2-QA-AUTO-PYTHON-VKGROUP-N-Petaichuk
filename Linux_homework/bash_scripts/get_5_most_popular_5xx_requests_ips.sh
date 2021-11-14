@@ -1,0 +1,2 @@
+echo "Топ 5 пользователей по количеству запросов, которые завершились серверной (5ХХ) ошибкой:" > "bash_5_MPR_5XX_output.txt"
+cat < "$1" | awk '{printf "%s %s\n", $1, $9}' | grep '\b5[[:digit:]]\{2\}\b'| sort | uniq -c | sort -k1nr | head -5 | awk '{printf "%s\n%s\n\n", $2, $1}' >> "bash_5_MPR_5XX_output.txt"

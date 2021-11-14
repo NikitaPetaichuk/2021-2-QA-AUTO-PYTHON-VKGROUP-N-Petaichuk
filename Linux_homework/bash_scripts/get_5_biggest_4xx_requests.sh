@@ -1,0 +1,2 @@
+echo "Топ 5 самых больших по размеру запросов, которые завершились клиентской (4ХХ) ошибкой:" > "bash_5_BR_4XX_output.txt"
+cat < "$1" | awk '{printf "%s %s %s %s\n", $7, $9, $10, $1}' | grep '\b4[[:digit:]]\{2\}\b' | sort -k3nr | head -5 | awk '{printf "%s\n%s\n%s\n%s\n\n", $1, $2, $3, $4}' >> "bash_5_BR_4XX_output.txt"
