@@ -7,6 +7,14 @@ from static.tests_config import TestsConfig
 
 class TestHomeworkFour(BaseCase):
 
+    def check_fact_card_existence(self, card_title, resend_command=False, command=''):
+        fact_card_title = self.main_page.find_fact_card_title(card_title)
+        if fact_card_title is None and resend_command:
+            self.main_page.send_command_to_marussia(command)
+            fact_card_title = self.main_page.find_fact_card_title(card_title)
+        assert fact_card_title is not None
+        assert fact_card_title.text == card_title
+
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
     @allure.story('Inputting command to Marussia')
@@ -16,20 +24,15 @@ class TestHomeworkFour(BaseCase):
             self.main_page.send_command_to_marussia(TestsConfig.RUSSIA_INPUT_TEXT, first_one=True)
 
         with allure.step(f"Checking fact card got from Marussia about '{TestsConfig.RUSSIA_INPUT_TEXT}'"):
-            fact_card_title = self.main_page.find_fact_card_title(TestsConfig.RUSSIA_FACT_CARD_TITLE)
-            if fact_card_title is None:
-                self.main_page.send_command_to_marussia(TestsConfig.RUSSIA_INPUT_TEXT)
-                fact_card_title = self.main_page.find_fact_card_title(TestsConfig.RUSSIA_FACT_CARD_TITLE)
-            assert fact_card_title is not None
-            assert fact_card_title.text == TestsConfig.RUSSIA_FACT_CARD_TITLE
+            self.check_fact_card_existence(TestsConfig.RUSSIA_FACT_CARD_TITLE,
+                                           resend_command=True,
+                                           command=TestsConfig.RUSSIA_INPUT_TEXT)
 
         with allure.step(f"Clicking on suggestion '{TestsConfig.RUSSIA_POPULATION_SUGGEST}'"):
             self.main_page.choose_suggestion(TestsConfig.RUSSIA_POPULATION_SUGGEST)
 
         with allure.step(f"Checking fact card on suggestion '{TestsConfig.RUSSIA_POPULATION_SUGGEST}'"):
-            fact_card_title = self.main_page.find_fact_card_title(TestsConfig.RUSSIA_POPULATION_FACT_CARD_TITLE)
-            assert fact_card_title is not None
-            assert fact_card_title.text == TestsConfig.RUSSIA_POPULATION_FACT_CARD_TITLE
+            self.check_fact_card_existence(TestsConfig.RUSSIA_POPULATION_FACT_CARD_TITLE)
 
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
@@ -89,7 +92,7 @@ class TestHomeworkFour(BaseCase):
 
         with allure.step("Checking app version"):
             version_label = app_info_page.find(app_info_page.locators.APP_VERSION_LABEL)
-            assert version_label.text.endswith(TestsConfig.APK_VERSION)
+            assert version_label.text.endswith(TestsConfig.apk_version())
 
         with allure.step("Checking copyright label"):
             copyright_label = app_info_page.find(app_info_page.locators.COPYRIGHT_LABEL)

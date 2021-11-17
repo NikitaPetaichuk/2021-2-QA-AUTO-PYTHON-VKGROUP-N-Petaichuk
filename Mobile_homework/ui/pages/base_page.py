@@ -64,14 +64,11 @@ class BasePage:
 
     def swipe_element_lo_left(self, locator):
         element = self.find(locator)
-        print(element)
-        left_x = element.location['x'] + 200
-        right_x = left_x + element.rect['width'] - 400
-        print(left_x, right_x)
+        left_x = element.location['x'] + element.rect['width'] * 0.3
+        right_x = left_x + element.rect['width'] * 0.4
         upper_y = element.location['y']
         lower_y = upper_y + element.rect['height']
         middle_y = (upper_y + lower_y) / 2
-        print(upper_y, middle_y, lower_y)
         touch_action = TouchAction(self.driver)
         touch_action.press(x=right_x, y=middle_y).wait(ms=TestsConfig.DEFAULT_SWIPE_TIME)\
             .move_to(x=left_x, y=middle_y).release().perform()
