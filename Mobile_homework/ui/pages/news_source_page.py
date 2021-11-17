@@ -8,6 +8,10 @@ class NewsSourcePage(BasePage):
 
     locators = NewsSourcePageLocators()
 
+    def __init__(self, driver, menu_page):
+        super().__init__(driver)
+        self.menu_page = menu_page
+
     def set_news_source(self, news_source_title):
         news_source_locator = self.locators.get_news_source_title_locator(news_source_title)
         self.click(news_source_locator)
@@ -23,3 +27,4 @@ class NewsSourcePage(BasePage):
 
     def back_to_menu(self):
         self.click(self.locators.BACK_BUTTON)
+        return self.menu_page

@@ -7,13 +7,20 @@ from static.tests_config import TestsConfig
 
 class TestHomeworkFour(BaseCase):
 
-    def check_fact_card_existence(self, card_title, resend_command=False, command=''):
-        fact_card_title = self.main_page.find_fact_card_title(card_title)
-        if fact_card_title is None and resend_command:
+    def check_answer_post_existence(self, title, find_title_method, resend_command=False, command=''):
+        post_title = find_title_method(title)
+        if post_title is None and resend_command:
             self.main_page.send_command_to_marussia(command)
-            fact_card_title = self.main_page.find_fact_card_title(card_title)
-        assert fact_card_title is not None
-        assert fact_card_title.text == card_title
+            post_title = self.main_page.find_fact_card_title(title)
+        assert post_title is not None
+        assert post_title.text == title
+
+    def check_calculator_command_execution(self, command, command_index):
+        self.main_page.send_command_to_marussia(command, first_one=(command_index == 0))
+        command_result = str(eval(command))
+        answer_message = self.main_page.find_message(command_result)
+        assert answer_message is not None
+        assert answer_message.text == command_result
 
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
@@ -24,15 +31,21 @@ class TestHomeworkFour(BaseCase):
             self.main_page.send_command_to_marussia(TestsConfig.RUSSIA_INPUT_TEXT, first_one=True)
 
         with allure.step(f"Checking fact card got from Marussia about '{TestsConfig.RUSSIA_INPUT_TEXT}'"):
-            self.check_fact_card_existence(TestsConfig.RUSSIA_FACT_CARD_TITLE,
-                                           resend_command=True,
-                                           command=TestsConfig.RUSSIA_INPUT_TEXT)
+            self.check_answer_post_existence(
+                TestsConfig.RUSSIA_FACT_CARD_TITLE,
+                self.main_page.find_fact_card_title,
+                resend_command=True,
+                command=TestsConfig.RUSSIA_INPUT_TEXT
+            )
 
         with allure.step(f"Clicking on suggestion '{TestsConfig.RUSSIA_POPULATION_SUGGEST}'"):
             self.main_page.choose_suggestion(TestsConfig.RUSSIA_POPULATION_SUGGEST)
 
         with allure.step(f"Checking fact card on suggestion '{TestsConfig.RUSSIA_POPULATION_SUGGEST}'"):
-            self.check_fact_card_existence(TestsConfig.RUSSIA_POPULATION_FACT_CARD_TITLE)
+            self.check_answer_post_existence(
+                TestsConfig.RUSSIA_POPULATION_FACT_CARD_TITLE,
+                self.main_page.find_fact_card_title
+            )
 
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
@@ -40,19 +53,14 @@ class TestHomeworkFour(BaseCase):
     @pytest.mark.Android
     def test_input_command_to_marussia_calculator(self):
         with allure.step("Going to skills page"):
-            menu_page = self.main_page.go_to_menu()
-            skills_page = menu_page.go_to_skills_page()
+            skills_page = self.go_to_page("skills")
 
         with allure.step(f"Choosing skill '{TestsConfig.CALCULATOR_SKILL_TITLE}'"):
             skills_page.choose_skill(TestsConfig.CALCULATOR_SKILL_TITLE)
 
         for index, command in enumerate(TestsConfig.COMMANDS):
             with allure.step(f"Sending command number {index + 1}: '{command}'"):
-                self.main_page.send_command_to_marussia(command, first_one=(index == 0))
-                command_result = str(eval(command))
-                answer_message = self.main_page.find_message(command_result)
-                assert answer_message is not None
-                assert answer_message.text == command_result
+                self.check_calculator_command_execution(command, index)
 
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
@@ -60,8 +68,7 @@ class TestHomeworkFour(BaseCase):
     @pytest.mark.Android
     def test_news_source_usage(self):
         with allure.step("Going to news source page"):
-            menu_page = self.main_page.go_to_menu()
-            news_source_page = menu_page.go_to_news_source_page()
+            news_source_page = self.go_to_page("news_source")
 
         with allure.step(f"Choosing news source '{TestsConfig.NEWS_SOURCE_TITLE}'"):
             news_source_locator = news_source_page.set_news_source(TestsConfig.NEWS_SOURCE_TITLE)
@@ -70,16 +77,16 @@ class TestHomeworkFour(BaseCase):
             assert news_source_page.check_news_source_selected(news_source_locator)
 
         with allure.step("Returning back to main page"):
-            news_source_page.back_to_menu()
-            menu_page.back_to_main_page()
+            self.return_to_main_page(news_source_page)
 
         with allure.step(f"Sending command '{TestsConfig.NEWS_COMMAND}'"):
             self.main_page.send_command_to_marussia(TestsConfig.NEWS_COMMAND, first_one=True)
 
         with allure.step("Checking player track title"):
-            player_track_title = self.main_page.find_player_track_title(TestsConfig.NEWS_PLAYER_TRACK_TITLE)
-            assert player_track_title is not None
-            assert player_track_title.text == TestsConfig.NEWS_PLAYER_TRACK_TITLE
+            self.check_answer_post_existence(
+                TestsConfig.NEWS_PLAYER_TRACK_TITLE,
+                self.main_page.find_player_track_title
+            )
 
     @allure.epic('QA Python Homework 4: Android testing')
     @allure.feature('Marussia functionality')
@@ -87,8 +94,7 @@ class TestHomeworkFour(BaseCase):
     @pytest.mark.Android
     def test_app_info_page_usage(self):
         with allure.step("Going to app info page"):
-            menu_page = self.main_page.go_to_menu()
-            app_info_page = menu_page.go_to_app_info_page()
+            app_info_page = self.go_to_page("app_info")
 
         with allure.step("Checking app version"):
             version_label = app_info_page.find(app_info_page.locators.APP_VERSION_LABEL)

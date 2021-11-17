@@ -17,7 +17,7 @@ class MenuPage(BasePage):
     def go_to_news_source_page(self):
         self.swipe_to_element(self.locators.GO_TO_NEWS_SOURCE_PAGE)
         self.click(self.locators.GO_TO_NEWS_SOURCE_PAGE)
-        return NewsSourcePage(self.driver)
+        return NewsSourcePage(self.driver, self)
 
     def go_to_skills_page(self):
         self.swipe_to_element(self.locators.GO_TO_SKILLS_PAGE)

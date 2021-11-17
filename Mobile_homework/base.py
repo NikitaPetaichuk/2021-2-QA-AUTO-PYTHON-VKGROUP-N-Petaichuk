@@ -26,3 +26,14 @@ class BaseCase:
         self.main_page: MainPage = request.getfixturevalue("main_page")
 
         self.logger.info("Initial setup completed")
+
+    def go_to_page(self, page_name):
+        menu_page = self.main_page.go_to_menu()
+        return getattr(menu_page, f"go_to_{page_name}_page")()
+
+    def return_to_main_page(self, now_page):
+        back_to_menu_method = getattr(now_page, "back_to_menu", None)
+        if back_to_menu_method is None:
+            raise NotImplementedError(f"Page class {now_page.__class__.__name__} does not have 'back_to_menu' method")
+        menu_page = back_to_menu_method()
+        menu_page.back_to_main_page()
