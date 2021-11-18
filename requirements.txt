@@ -6,3 +6,6 @@ pytest-xdist
 faker
 requests
 Appium-Python-Client==1.1.0
+PyMySQL
+SQLAlchemy
+cryptography
