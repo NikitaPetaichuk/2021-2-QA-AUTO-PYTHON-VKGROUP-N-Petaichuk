@@ -9,18 +9,15 @@ OUTPUT_JSON_FILE_NAME = "NLP_result.json"
 
 class NginxLogParser:
 
-    methods_list = ["GET", "POST", "PUT", "DELETE", "HEAD", "CONNECT", "OPTIONS", "TRACE"]
-
     def __init__(self, log_file_name):
         self.log_entries = []
 
         with open(log_file_name, "r") as log_file:
             while line := log_file.readline().strip():
                 line_tokens = line.split()
-                method = line_tokens[5][1:]
                 log_entry = {
                     "IP": line_tokens[0],
-                    "METHOD": method if method in self.methods_list else "UNDEFINED",
+                    "METHOD": line_tokens[5][1:],
                     "URL": line_tokens[6],
                     "STATUS": line_tokens[8],
                     "SIZE": line_tokens[9]
@@ -154,9 +151,9 @@ def main():
     args_parser = create_args_parser()
     args = args_parser.parse_args()
 
-    no_first_three_flags = args.print_count or args.print_mc or args.print_top_10
-    no_second_three_flags = args.print_top_5_4XX or args.print_top_5_5XX or args.print_all
-    no_flags = no_first_three_flags or no_second_three_flags
+    no_first_three_flags = not (args.print_count or args.print_mc or args.print_top_10)
+    no_second_three_flags = not (args.print_top_5_4XX or args.print_top_5_5XX or args.print_all)
+    no_flags = no_first_three_flags and no_second_three_flags
 
     nginx_log_parser = NginxLogParser(args.logfile)
     if args.jsonify:

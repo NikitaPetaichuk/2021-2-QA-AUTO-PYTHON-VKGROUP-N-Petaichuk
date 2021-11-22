@@ -123,8 +123,8 @@ foo@bar:~$ python3 nginx_log_parser.py --top-5-biggest-4XX-requests access.log
   "biggest_4xx_requests": [
     {
       "url": "/administrator/index.php",
-      "status": 404,
-      "size": 2000,
+      "status": "404",
+      "size": "2000",
       "ip": "127.0.0.1"
     }
   ]
