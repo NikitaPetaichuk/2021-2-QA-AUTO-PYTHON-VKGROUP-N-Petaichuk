@@ -1,8 +1,10 @@
 pytest==6.2.5
 selenium==3.141.0
-webdriver-manager
-allure-pytest
-pytest-xdist
-faker
-requests
+webdriver-manager==3.5.1
+allure-pytest==2.9.45
+pytest-xdist==2.4.0
+faker==9.7.1
+requests==2.26.0
 Appium-Python-Client==1.1.0
+Flask==2.0.2
+werkzeug==2.0.2
