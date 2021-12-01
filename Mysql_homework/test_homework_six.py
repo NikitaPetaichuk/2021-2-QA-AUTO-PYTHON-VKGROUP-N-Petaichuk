@@ -37,9 +37,10 @@ class TestHomeworkSix(BaseCase):
     @allure.feature('Working with access log data')
     @allure.story('Check inserting to popular requests table')
     @pytest.mark.Mysql
-    def test_popular_requests(self):
+    def test_popular_requests(self, faker):
         with allure.step('Sending requests count data to DB'):
-            sent_rows_count = self.nginx_log_parser.write_to_db_10_popular_requests()
+            rows_to_write = faker.pyint(10, 100)
+            sent_rows_count = self.nginx_log_parser.write_to_db_popular_requests(rows_to_write)
 
         with allure.step(f'Checking {PopularRequests.__name__} table rows count'):
             self.check_rows_count(PopularRequests, sent_rows_count)
@@ -48,9 +49,10 @@ class TestHomeworkSix(BaseCase):
     @allure.feature('Working with access log data')
     @allure.story('Check inserting to biggest requests (with 4XX status code) table')
     @pytest.mark.Mysql
-    def test_biggest_4xx_requests(self):
+    def test_biggest_4xx_requests(self, faker):
         with allure.step('Sending requests count data to DB'):
-            sent_rows_count = self.nginx_log_parser.write_to_db_5_biggest_4xx_requests()
+            rows_to_write = faker.pyint(5, 50)
+            sent_rows_count = self.nginx_log_parser.write_to_db_biggest_4xx_requests(rows_to_write)
 
         with allure.step(f'Checking {Biggest4XXRequests.__name__} table rows count'):
             self.check_rows_count(Biggest4XXRequests, sent_rows_count)
@@ -59,9 +61,10 @@ class TestHomeworkSix(BaseCase):
     @allure.feature('Working with access log data')
     @allure.story('Check inserting to popular requests ip (with 5XX status code) table')
     @pytest.mark.Mysql
-    def test_popular_5xx_requests_ip(self):
+    def test_popular_5xx_requests_ip(self, faker):
         with allure.step('Sending requests count data to DB'):
-            sent_rows_count = self.nginx_log_parser.write_to_db_5_popular_5xx_requests_ip()
+            rows_to_write = faker.pyint(5, 50)
+            sent_rows_count = self.nginx_log_parser.write_to_db_popular_5xx_requests_ip(rows_to_write)
 
         with allure.step(f'Checking {Popular5XXRequestsIP.__name__} table rows count'):
             self.check_rows_count(Popular5XXRequestsIP, sent_rows_count)

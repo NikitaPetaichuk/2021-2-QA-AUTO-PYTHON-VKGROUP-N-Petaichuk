@@ -36,13 +36,13 @@ class MysqlNginxLogParser:
 
         entity = entity_class(**entity_values)
         self.mysql_client.session.add(entity)
-        self.mysql_client.session.commit()
 
     def write_to_db_requests_count(self):
         self.logger.info("Writing to DB requests count data")
 
         requests_count = len(self.log_entries)
         self._add_entity_to_db(RequestsCount, {"count": requests_count})
+        self.mysql_client.session.commit()
         return 1
 
     def write_to_db_methods_count(self):
@@ -55,26 +55,28 @@ class MysqlNginxLogParser:
                 "method": method,
                 "count": count
             })
+        self.mysql_client.session.commit()
         return len(methods_count_list)
 
-    def write_to_db_10_popular_requests(self):
+    def write_to_db_popular_requests(self, rows_to_write=10):
         self.logger.info("Writing to DB popular requests data")
 
         log_entries_urls_list = [log_entry["URL"] for log_entry in self.log_entries]
-        popular_requests_list = Counter(log_entries_urls_list).most_common(10)
+        popular_requests_list = Counter(log_entries_urls_list).most_common(rows_to_write)
         for url, count in popular_requests_list:
             self._add_entity_to_db(PopularRequests, {
                 "url": url,
                 "count": count
             })
+        self.mysql_client.session.commit()
         return len(popular_requests_list)
 
-    def write_to_db_5_biggest_4xx_requests(self):
+    def write_to_db_biggest_4xx_requests(self, rows_to_write=5):
         self.logger.info("Writing to DB biggest requests data (with 4XX status code)")
 
         requests_with_4xx_status = [log_entry for log_entry in self.log_entries if log_entry["STATUS"].startswith("4")]
         requests_with_4xx_status.sort(key=lambda e: int(e["SIZE"]) if e["SIZE"] != "-" else -1, reverse=True)
-        border_index = min(5, len(requests_with_4xx_status))
+        border_index = min(rows_to_write, len(requests_with_4xx_status))
         biggest_4xx_requests = requests_with_4xx_status[:border_index]
         for request_data in biggest_4xx_requests:
             self._add_entity_to_db(Biggest4XXRequests, {
@@ -83,16 +85,18 @@ class MysqlNginxLogParser:
                 "size": request_data["SIZE"],
                 "ip": request_data["IP"],
             })
+        self.mysql_client.session.commit()
         return len(biggest_4xx_requests)
 
-    def write_to_db_5_popular_5xx_requests_ip(self):
+    def write_to_db_popular_5xx_requests_ip(self, rows_to_write=5):
         self.logger.info("Writing to DB popular requests data (with 5XX status code)")
 
         ips_with_5xx_status = [log_entry["IP"] for log_entry in self.log_entries if log_entry["STATUS"].startswith("5")]
-        popular_5xx_requests_ip = Counter(ips_with_5xx_status).most_common(5)
+        popular_5xx_requests_ip = Counter(ips_with_5xx_status).most_common(rows_to_write)
         for ip, count in popular_5xx_requests_ip:
             self._add_entity_to_db(Popular5XXRequestsIP, {
                 "ip": ip,
                 "count": count
             })
+        self.mysql_client.session.commit()
         return len(popular_5xx_requests_ip)
