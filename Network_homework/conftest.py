@@ -54,10 +54,10 @@ def pytest_unconfigure(config):
 
 @pytest.fixture(scope='function')
 def test_dir(request):
-    test_dir = os.path.join(request.config.base_test_dir,
-                            request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_'))
-    os.makedirs(test_dir)
-    return test_dir
+    testing_dir = os.path.join(request.config.base_test_dir,
+                               request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_'))
+    os.makedirs(testing_dir)
+    return testing_dir
 
 
 @pytest.fixture(scope='function')
