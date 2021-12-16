@@ -1,0 +1,35 @@
+version: '2.1'
+
+services:
+  mysql_db:
+    image: 'percona'
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - /home/mrpedro/Programming/2021-2-QA-AUTO-PYTHON-VKGROUP-N-Petaichuk/Final_project/mysql/mysql_init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: mysqladmin -uroot -ppass ping -h mysql_db
+      timeout: 1s
+      retries: 30
+
+  mock:
+    build: ./vk_api_mock
+    image: 'vk_api'
+    ports:
+      - "9090:9090"
+
+  app:
+    image: 'myapp'
+    volumes:
+      - /home/mrpedro/Programming/2021-2-QA-AUTO-PYTHON-VKGROUP-N-Petaichuk/Final_project/static:/tmp
+    entrypoint: /app/myapp --config=/tmp/config.py
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+      mock:
+        condition: service_started
+
