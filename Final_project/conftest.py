@@ -24,7 +24,7 @@ def faker_seed():
 
 
 def pytest_configure(config):
-    base_dir = f"{os.environ['WORKSPACE']}/tests"
+    base_dir = f"{os.environ['WORKSPACE']}/tests_logs"
 
     if not hasattr(config, 'workerinput'):
         if os.path.exists(base_dir):
