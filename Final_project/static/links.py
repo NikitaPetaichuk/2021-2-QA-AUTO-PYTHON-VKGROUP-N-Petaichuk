@@ -1,12 +1,20 @@
+from static.config import APP_PORT, APP_HOST
+
+
 class Links:
 
-    APP_BASE_LINK = 'http://127.0.0.1:8080/'
-    APP_LOGIN_LINK = f'{APP_BASE_LINK}login'
-    APP_REGISTER_PAGE = f'{APP_BASE_LINK}reg'
-    APP_MAIN_PAGE = f'{APP_BASE_LINK}welcome/'
-    APP_ERROR_RESOURCE = f'{APP_BASE_LINK}static/scripts/findMeError.js'
+    SELENOID_PATH = "http://127.0.0.1:4444"
 
+    APP_BASE_LINK = f'http://127.0.0.1:{APP_PORT}/'
+    APP_SELENOID_BASE_LINK = f'http://{APP_HOST}:{APP_PORT}/'
+
+    APP_LOGIN_LINK = f'{APP_SELENOID_BASE_LINK}login'
+    APP_REGISTER_PAGE = f'{APP_SELENOID_BASE_LINK}reg'
+    APP_MAIN_PAGE = f'{APP_SELENOID_BASE_LINK}welcome/'
+
+    APP_ERROR_RESOURCE = f'{APP_BASE_LINK}static/scripts/findMeError.js'
     APP_API_STATUS = f'{APP_BASE_LINK}status'
+
     APP_API_ADD_USER_PART = 'api/add_user'
     APP_API_DELETE_USER_PART = 'api/del_user/'
     APP_API_BLOCK_USER_PART = 'api/block_user/'

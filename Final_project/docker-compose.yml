@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   mysql_db:
-    image: 'percona'
+    image: percona
     environment:
       MYSQL_ROOT_PASSWORD: pass
     ports:
@@ -16,20 +16,33 @@ services:
 
   mock:
     build: ./vk_api_mock
-    image: 'vk_api'
+    image: vk_api
     ports:
       - "9090:9090"
 
-  app:
-    image: 'myapp'
+  myapp:
+    image: myapp
     volumes:
       - /home/mrpedro/Programming/2021-2-QA-AUTO-PYTHON-VKGROUP-N-Petaichuk/Final_project/static:/tmp
     entrypoint: /app/myapp --config=/tmp/config.py
     ports:
-      - "8080:8080"
+      - "8000:8000"
     depends_on:
       mysql_db:
         condition: service_healthy
       mock:
         condition: service_started
 
+  selenoid:
+    image: selenoid/chrome:95.0
+    volumes:
+      - /home/mrpedro/Programming/2021-2-QA-AUTO-PYTHON-VKGROUP-N-Petaichuk/Final_project/static/selenoid_config:/etc/selenoid
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["-conf", "/etc/selenoid/browsers.json"]
+    ports:
+      - "4444:4444"
+
+networks:
+  default:
+    external: true
+    name: app-network

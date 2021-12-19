@@ -2,14 +2,13 @@ import pytest
 
 from api_clients.app_api_client import AppAPIClient, UnexpectedResponseStatusCodeException
 from static.links import Links
-from utils.user_builder import UserBuilder
 
 
 class BaseCaseAPI:
 
     @pytest.fixture(scope='function', autouse=True)
-    def setup(self, logger, mysql_client, faker):
-        self.user_builder = UserBuilder()
+    def setup(self, logger, mysql_client, user_builder, faker):
+        self.user_builder = user_builder
         self.mysql_client = mysql_client
         self.logger = logger
 
@@ -27,9 +26,17 @@ class BaseCaseAPI:
         self.api_client = AppAPIClient(Links.APP_BASE_LINK, self.credentials["username"], self.credentials["email"],
                                        self.credentials["password"])
 
-    @staticmethod
-    def check_request(request_method, request_data, expected_status=200):
+    def check_request(self, request_method, request_data, expected_status=200):
         try:
             request_method(request_data, expected_status)
         except UnexpectedResponseStatusCodeException:
-            assert False
+            user_entity = None
+            if request_method is self.api_client.post_register_client:
+                field = "email" if request_data.get("email", False) else "username"
+                user_entity = self.mysql_client.get_user(field, request_data[field])
+            elif request_method is self.api_client.get_user_delete:
+                user_entity = self.mysql_client.get_user("username", request_data)
+
+            if user_entity is not None:
+                self.mysql_client.delete_user(user_entity.email)
+            assert False, "Incorrect status code"

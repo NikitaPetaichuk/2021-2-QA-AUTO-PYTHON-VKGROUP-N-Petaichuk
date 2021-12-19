@@ -8,15 +8,14 @@ import time
 
 import allure
 import pytest
-from selenium.webdriver import Chrome
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium import webdriver
 
 import static.config as conf
-from api_clients.app_api_client import AppAPIClient
 from static.links import Links
 from static.tests_config import TestsConfig
 from mysql.mysql_client import MysqlClient
 from ui.pages.login_page import LoginPage
+from utils.user_builder import UserBuilder
 from utils.util_funcs import wait_app_ready
 
 
@@ -41,8 +40,13 @@ def pytest_configure(config):
         app_stdout_file = open(app_stdout_file_path, "w")
         app_stderr_file = open(app_stderr_file_path, "w")
 
-        app_process = subprocess.Popen(['docker-compose', 'up', '--force-recreate'],
+        network_create_return_code = subprocess.run(["docker", "network", "create", "-d", "bridge", "app-network"],
+                                                    stdout=app_stdout_file, stderr=app_stderr_file).returncode
+        assert network_create_return_code == 0
+
+        app_process = subprocess.Popen(['docker-compose', 'up'],
                                        stdout=app_stdout_file, stderr=app_stderr_file)
+
         config.app_stdout_file = app_stdout_file
         config.app_stderr_file = app_stderr_file
         config.app_process = app_process
@@ -66,6 +70,11 @@ def pytest_unconfigure(config):
                                           stdout=config.app_stdout_file,
                                           stderr=config.app_stderr_file).returncode
         assert down_return_code == 0
+
+        network_rm_return_code = subprocess.run(["docker", "network", "rm", "app-network"],
+                                                stdout=config.app_stdout_file,
+                                                stderr=config.app_stderr_file).returncode
+        assert network_rm_return_code == 0
 
         config.app_stdout_file.close()
         config.app_stderr_file.close()
@@ -109,16 +118,28 @@ def mysql_client(request):
     client.connection.close()
 
 
+@pytest.fixture(scope='session')
+def user_builder():
+    return UserBuilder()
+
+
 def get_driver():
-    manager = ChromeDriverManager(version='latest', log_level=logging.CRITICAL)
-    browser = Chrome(executable_path=manager.install())
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    capabilities = {
+        "browserName": "chrome",
+        "version": "95.0",
+        "additionalNetworks": ["app-network"]
+    }
+    browser = webdriver.Remote(Links.SELENOID_PATH, desired_capabilities=capabilities, options=options)
     return browser
 
 
 @pytest.fixture(scope='function')
 def driver(test_dir):
     browser = get_driver()
-    browser.get(Links.APP_BASE_LINK)
+    browser.get(Links.APP_SELENOID_BASE_LINK)
     browser.maximize_window()
     yield browser
     browser.quit()

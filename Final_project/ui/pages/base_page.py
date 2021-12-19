@@ -17,7 +17,7 @@ class PageNotLoadedException(Exception):
 
 class BasePage:
 
-    url = Links.APP_BASE_LINK
+    url = Links.APP_SELENOID_BASE_LINK
 
     def __init__(self, driver):
         self.driver: WebDriver = driver

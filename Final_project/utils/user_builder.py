@@ -25,3 +25,6 @@ class UserBuilder:
             "email": email,
             "password": password
         }
+
+    def create_user_data_string(self, max_chars, min_chars=None):
+        return self.fake.unique.pystr(max_chars=max_chars, min_chars=min_chars)
