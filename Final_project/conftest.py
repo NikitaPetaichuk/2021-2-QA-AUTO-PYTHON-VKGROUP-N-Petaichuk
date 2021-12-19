@@ -36,12 +36,14 @@ def pytest_configure(config):
         app_stdout_file = open(app_stdout_file_path, "w")
         app_stderr_file = open(app_stderr_file_path, "w")
 
-        network_create_return_code = subprocess.run(["docker", "network", "create", "-d", "bridge", "app-network"],
-                                                    stdout=app_stdout_file, stderr=app_stderr_file).returncode
+        network_create_return_code = subprocess.run(
+            ["docker", "network", "create", "-d", "bridge", "app-network"],
+            stdout=app_stdout_file, stderr=app_stderr_file, shell=True
+        ).returncode
         assert network_create_return_code == 0
 
         app_process = subprocess.Popen(['docker-compose', 'up'],
-                                       stdout=app_stdout_file, stderr=app_stderr_file)
+                                       stdout=app_stdout_file, stderr=app_stderr_file, shell=True)
 
         config.app_stdout_file = app_stdout_file
         config.app_stderr_file = app_stderr_file
@@ -64,12 +66,12 @@ def pytest_unconfigure(config):
 
         down_return_code = subprocess.run(["docker-compose", "down"],
                                           stdout=config.app_stdout_file,
-                                          stderr=config.app_stderr_file).returncode
+                                          stderr=config.app_stderr_file, shell=True).returncode
         assert down_return_code == 0
 
         network_rm_return_code = subprocess.run(["docker", "network", "rm", "app-network"],
                                                 stdout=config.app_stdout_file,
-                                                stderr=config.app_stderr_file).returncode
+                                                stderr=config.app_stderr_file, shell=True).returncode
         assert network_rm_return_code == 0
 
         config.app_stdout_file.close()
