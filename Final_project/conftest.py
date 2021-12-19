@@ -67,12 +67,12 @@ def pytest_unconfigure(config):
         down_return_code = subprocess.run(["docker-compose", "down"],
                                           stdout=config.app_stdout_file,
                                           stderr=config.app_stderr_file, shell=True).returncode
-        assert down_return_code == 0
+        assert down_return_code == 0, "Can't shut down system"
 
         network_rm_return_code = subprocess.run(["docker", "network", "rm", "app-network"],
                                                 stdout=config.app_stdout_file,
                                                 stderr=config.app_stderr_file, shell=True).returncode
-        assert network_rm_return_code == 0
+        assert network_rm_return_code == 0, "Can't destroy network"
 
         config.app_stdout_file.close()
         config.app_stderr_file.close()
