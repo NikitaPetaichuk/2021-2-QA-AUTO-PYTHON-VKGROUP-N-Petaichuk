@@ -3,7 +3,6 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import time
 
 import allure
@@ -25,10 +24,7 @@ def faker_seed():
 
 
 def pytest_configure(config):
-    if sys.platform.startswith("win"):
-        base_dir = "C:\\tests"
-    else:
-        base_dir = "/tmp/tests"
+    base_dir = f"{os.environ['WORKSPACE']}/tests"
 
     if not hasattr(config, 'workerinput'):
         if os.path.exists(base_dir):
