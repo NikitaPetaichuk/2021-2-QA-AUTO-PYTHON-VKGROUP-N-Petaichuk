@@ -38,12 +38,12 @@ def pytest_configure(config):
 
         network_create_return_code = subprocess.run(
             ["docker", "network", "create", "-d", "bridge", "app-network"],
-            stdout=app_stdout_file, stderr=app_stderr_file, shell=True
+            stdout=app_stdout_file, stderr=app_stderr_file
         ).returncode
-        assert network_create_return_code == 0
+        assert network_create_return_code == 0, "Can't create network"
 
         app_process = subprocess.Popen(['docker-compose', 'up'],
-                                       stdout=app_stdout_file, stderr=app_stderr_file, shell=True)
+                                       stdout=app_stdout_file, stderr=app_stderr_file)
 
         config.app_stdout_file = app_stdout_file
         config.app_stderr_file = app_stderr_file
@@ -66,12 +66,12 @@ def pytest_unconfigure(config):
 
         down_return_code = subprocess.run(["docker-compose", "down"],
                                           stdout=config.app_stdout_file,
-                                          stderr=config.app_stderr_file, shell=True).returncode
+                                          stderr=config.app_stderr_file).returncode
         assert down_return_code == 0, "Can't shut down system"
 
         network_rm_return_code = subprocess.run(["docker", "network", "rm", "app-network"],
                                                 stdout=config.app_stdout_file,
-                                                stderr=config.app_stderr_file, shell=True).returncode
+                                                stderr=config.app_stderr_file).returncode
         assert network_rm_return_code == 0, "Can't destroy network"
 
         config.app_stdout_file.close()
